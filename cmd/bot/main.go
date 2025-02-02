@@ -4,7 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/I-Van-Radkov/TelegramBot/client/telegram"
+	telegram "github.com/I-Van-Radkov/TelegramBot/client/telegram"
+
 	"github.com/I-Van-Radkov/TelegramBot/internal/bot"
 )
 
