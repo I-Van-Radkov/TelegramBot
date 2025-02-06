@@ -4,7 +4,8 @@ import (
 	"log"
 	"time"
 
-	telegram "github.com/I-Van-Radkov/TelegramBot/client/telegram"
+	telegram "github.com/I-Van-Radkov/TelegramBot/clients/telegram"
+	handlers "github.com/I-Van-Radkov/TelegramBot/internal/handlers"
 )
 
 type Worker struct {
@@ -22,24 +23,22 @@ func NewWorker(client *telegram.Client) *Worker {
 
 func (w *Worker) Start() error {
 	for {
-		updates, err := w.tgClient.Updates(w.offset, w.limit)
+		updates := handlers.NewUpdates(w.tgClient) //структура для получения обновлений
+
+		dataUpdate, err := w.tgClient.Updates(w.offset, w.limit) //получаем слайс с обновлениями
 		if err != nil {
 			log.Printf("[ERR] getUpdates %s", err.Error())
 			continue
 		}
+		updates.Updates = dataUpdate
 
-		if len(updates) == 0 {
+		if len(updates.Updates) == 0 { //если не надено обновлений
 			time.Sleep(1 * time.Second)
 			continue
 		}
 
-		w.offset = updates[len(updates)-1].ID + 1
-		w.handleUpdates(updates)
-	}
-}
+		w.offset = updates.Updates[len(updates.Updates)-1].ID + 1
 
-func (w *Worker) handleUpdates(updates []telegram.Update) {
-	for _, update := range updates {
-		w.tgClient.SendMessage(update.Message.Chat.ID, "Пошел нахуй, уеба, я еще в разработке, хули ты тут делаешь")
+		updates.HandleUpdates() //обработка обновлений
 	}
 }

@@ -4,14 +4,15 @@ import (
 	"flag"
 	"log"
 
-	telegram "github.com/I-Van-Radkov/TelegramBot/client/telegram"
+	telegram "github.com/I-Van-Radkov/TelegramBot/clients/telegram"
 	bot "github.com/I-Van-Radkov/TelegramBot/internal/bot"
 )
 
 func main() {
 	token := mustFlag()
 
-	Worker := bot.NewWorker(telegram.NewClient(token))
+	client := telegram.NewClient(token)
+	Worker := bot.NewWorker(client)
 	log.Print("Telegram service is started")
 
 	if err := Worker.Start(); err != nil {
