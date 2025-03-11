@@ -6,7 +6,7 @@ type Graph struct {
 	EndVertex   int
 }
 
-func (g *Graph) NewGraph(matrix [][]int, start, end int) *Graph {
+func NewGraph(matrix [][]int, start, end int) *Graph {
 	return &Graph{
 		Matrix:      matrix,
 		StartVertex: start,
