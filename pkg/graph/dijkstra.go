@@ -40,9 +40,10 @@ func (g *Graph) Dijkstra(channel chan string) {
 
 	var resultPath string
 	for at := g.EndVertex; at != -1; at = previous[at] {
-		resultPath = " " + strconv.Itoa(at) + resultPath
+		resultPath = strconv.Itoa(at) + "->" + resultPath
 	}
-	channel <- fmt.Sprintf("Кратчайшее расстояние от вершины %d до вершины %d: %d\nПуть: %s", g.StartVertex, g.EndVertex, resultDistance, strings.TrimSpace(resultPath))
+	resultPath = strings.TrimSpace(resultPath)
+	channel <- fmt.Sprintf("Кратчайшее расстояние от вершины %d до вершины %d: %d\nПуть: %s", g.StartVertex, g.EndVertex, resultDistance, resultPath[:len(resultPath)-2])
 }
 
 func minDistances(distances []int, visited []bool) int {

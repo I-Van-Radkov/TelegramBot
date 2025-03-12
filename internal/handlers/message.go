@@ -114,12 +114,12 @@ func parseMessage(message string) ([][]int, int, int, error) {
 	}
 
 	start, err := strconv.Atoi(lines[len(lines)-2]) //начальная вершина
-	if err != nil {
+	if err != nil || start >= numCols {
 		return nil, 0, 0, fmt.Errorf("error when parsing the start vertex")
 	}
 
 	end, err := strconv.Atoi(lines[len(lines)-1]) //конечная вершина
-	if err != nil {
+	if err != nil || end >= numCols || end < start {
 		return nil, 0, 0, fmt.Errorf("error when parsing the end vertex")
 	}
 
