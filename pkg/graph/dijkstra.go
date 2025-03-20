@@ -8,28 +8,57 @@ import (
 )
 
 func (g *Graph) Dijkstra(channel chan string) {
+	var textResult string
+
 	numVertices := len(g.Matrix)
 	distances := make([]int, numVertices)
 	visited := make([]bool, numVertices)
 	previous := make([]int, numVertices)
 
+	textResult += "Инициализация:\n"
 	for i := range distances {
-		distances[i] = math.MaxInt64
 		previous[i] = -1
+		if i != g.StartVertex {
+			distances[i] = math.MaxInt64
+			textResult += fmt.Sprintf("'%d': ∞; ", i)
+			continue
+		}
+		distances[g.StartVertex] = 0
+		textResult += fmt.Sprintf("'%d': 0; ", i)
 	}
-	distances[g.StartVertex] = 0
 
+	textResult += "\n\n"
 	for i := 0; i < numVertices; i++ {
+		textResult += fmt.Sprintf("Шаг №%d\n", i+1)
 		u := minDistances(distances, visited)
+		textResult += fmt.Sprintf("Текущая вершина: '%d'\n", u)
 		visited[u] = true
 
+		textResult += "Обновляем расстояния для вершин.\n"
 		for v := 0; v < numVertices; v++ {
-			if !visited[v] && g.Matrix[u][v] != 0 && distances[u] != math.MaxInt64 && distances[u]+g.Matrix[u][v] < distances[v] {
-				distances[v] = distances[u] + g.Matrix[u][v]
-				previous[v] = u
+			textResult += fmt.Sprintf(" - Вершина '%d': ", v)
+
+			if !visited[v] && g.Matrix[u][v] != 0 && distances[u] != math.MaxInt64 {
+				textResult += fmt.Sprintf("min(%d + %d, %d) = ", distances[u], g.Matrix[u][v], distances[v])
+				if distances[u]+g.Matrix[u][v] < distances[v] {
+					distances[v] = distances[u] + g.Matrix[u][v]
+					previous[v] = u
+				}
+			}
+
+			textResult += fmt.Sprintf("%d\n", distances[v])
+		}
+
+		textResult += "Посещенные вершины:"
+		for vert, isVisited := range visited {
+			if isVisited {
+				textResult += fmt.Sprintf(" '%d'", vert)
 			}
 		}
+		textResult += ";\n\n"
 	}
+
+	textResult += "Итог:\n"
 
 	resultDistance := distances[g.EndVertex]
 
@@ -43,7 +72,10 @@ func (g *Graph) Dijkstra(channel chan string) {
 		resultPath = strconv.Itoa(at) + "->" + resultPath
 	}
 	resultPath = strings.TrimSpace(resultPath)
-	channel <- fmt.Sprintf("Кратчайшее расстояние от вершины %d до вершины %d: %d\nПуть: %s", g.StartVertex, g.EndVertex, resultDistance, resultPath[:len(resultPath)-2])
+
+	textResult += fmt.Sprintf("Кратчайшее расстояние от вершины %d до вершины %d: %d\nПуть: %s", g.StartVertex, g.EndVertex, resultDistance, resultPath[:len(resultPath)-2])
+	textResult = strings.Replace(textResult, fmt.Sprintf("%d", math.MaxInt64), "∞", -1)
+	channel <- textResult
 }
 
 func minDistances(distances []int, visited []bool) int {
