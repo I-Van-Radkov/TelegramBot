@@ -38,6 +38,8 @@ func (u *Updates) HandleUpdates() {
 		}
 
 		u.tgClient.SendMessage(update.Message.Chat.ID, constants.MsgDataAccepted) // Сообщение, что запрос принят
+		// Ожидание результата вычисления: 30 секунд
+		timer := time.NewTicker(30 * time.Second)
 
 		matrix, start, end, err := parseMessage(update.Message.Text)
 
@@ -58,17 +60,16 @@ func (u *Updates) HandleUpdates() {
 		}
 
 		myGraph := graph.NewGraph(matrix, start, end)
-		channel := make(chan string)
 
-		go myGraph.Dijkstra(channel)
+		resultChan := myGraph.Dijkstra()
 
-		// Ожидание результата вычисления: 30 секунд
-		timeout := time.AfterFunc(30*time.Second, func() {
-			channel <- constants.MsgTimeIsUp
-		})
-
-		result := <-channel
-		timeout.Stop()
+		var result string
+		select {
+		case result = <-resultChan:
+			timer.Stop()
+		case <-timer.C:
+			result = constants.MsgTimeIsUp
+		}
 
 		u.tgClient.SendMessage(update.Message.Chat.ID, result)
 	}
